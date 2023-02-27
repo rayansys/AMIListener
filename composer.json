@@ -1,0 +1,32 @@
+{
+  "name": "rayansys/ami_listener",
+  "description": "Event listener for Asterisk Manager Interface",
+  "type": "library",
+  "version": "1.0",
+  "keywords": [
+    "event-loop",
+    "asynchronous"
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "workerman/workerman": "4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "AMIListener\\": "src/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alireza Yusefi",
+      "email": "rayansys@gmail.com",
+      "homepage": "https://github.com/rayansys",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "walkor@workerman.net"
+  },
+  "minimum-stability": "dev"
+}
