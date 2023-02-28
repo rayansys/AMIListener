@@ -69,7 +69,7 @@ class AMIListener
         Worker::runAll();
     }
 	
-	public static function getRecordingFile($id,$defaultPath = "/var/spool/asterisk/monitor/"){
+	public static function getRecordingFile($id,$defaultPath = "/var/spool/asterisk/monitor/",$fileFormat = "wav"){
         $y = date("Y",round($id));
         $m = date("m",round($id));
         $d = date("d",round($id));
@@ -77,7 +77,7 @@ class AMIListener
         $files = glob($path);
         if ($files !== false) {
             foreach ($files as $file) {
-                if(substr($file,strlen($file)-20) == $id.".wav"){
+                if(substr($file,strlen($file)-17-strlen($fileFormat)) == $id.".".$fileFormat){
                     return file_get_contents($file);
                 }
             }
