@@ -35,7 +35,6 @@ class AMIListener
     }
 
     public function start(){
-
         $worker = new Worker();
         $worker->onWorkerStart = function () {
             $ws_connection = new AsyncTcpConnection('tcp://'.$this->host.':'.$this->port);
@@ -70,7 +69,7 @@ class AMIListener
         Worker::runAll();
     }
 	
-	public function getRecordingFile($id,$defaultPath = "/var/spool/asterisk/monitor/"){
+	public static function getRecordingFile($id,$defaultPath = "/var/spool/asterisk/monitor/"){
         $y = date("Y",round($id));
         $m = date("m",round($id));
         $d = date("d",round($id));
@@ -78,8 +77,8 @@ class AMIListener
         $files = glob($path);
         if ($files !== false) {
             foreach ($files as $file) {
-                if(substr($file,strlen($file)-21) == $id.".wav"){
-                    return $file;
+                if(substr($file,strlen($file)-20) == $id.".wav"){
+                    return file_get_contents($file);
                 }
             }
         }
