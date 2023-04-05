@@ -35,7 +35,7 @@ class AMIListener
     }
 
     public function start($autoReconnect = true){
-        $worker = new Worker("AMIListener");
+        $worker = new Worker();
         $worker->onWorkerStart = function () use ($autoReconnect) {
             $ws_connection = new AsyncTcpConnection('tcp://'.$this->host.':'.$this->port);
             $ws_connection->onConnect = function (TcpConnection $connection) {
