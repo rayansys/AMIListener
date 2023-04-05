@@ -2,7 +2,7 @@
   "name": "rayansys/ami_listener",
   "description": "Event listener for Asterisk Manager Interface",
   "type": "library",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "keywords": [
     "event-loop",
     "asynchronous"
