@@ -34,9 +34,9 @@ class AMIListener
         }
     }
 
-    public function start(){
-        $worker = new Worker();
-        $worker->onWorkerStart = function () {
+    public function start($autoReconnect = true){
+        $worker = new Worker("AMIListener");
+        $worker->onWorkerStart = function () use ($autoReconnect) {
             $ws_connection = new AsyncTcpConnection('tcp://'.$this->host.':'.$this->port);
             $ws_connection->onConnect = function (TcpConnection $connection) {
                 echo "Connection Open\n";
@@ -60,8 +60,11 @@ class AMIListener
                     }
                 }
             };
-            $ws_connection->onClose = function (TcpConnection $connection) {
+            $ws_connection->onClose = function (TcpConnection $connection) use ($autoReconnect) {
                 echo "Connection closed\n";
+                if ($autoReconnect){
+                    Worker::reloadAllWorkers();
+                }
             };
             $ws_connection->connect();
         };
