@@ -36,6 +36,10 @@ class AMIListener
         }
     }
 
+    public function addTimer($interval , $callable){
+        Timer::add($interval,$callable);
+    }
+
     public function start($autoReconnect = true){
         $worker = new Worker();
         $worker->onWorkerStart = function () use ($autoReconnect) {
