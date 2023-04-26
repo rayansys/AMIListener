@@ -3,15 +3,17 @@ namespace AMIListener;
 
 use Workerman\Connection\AsyncTcpConnection;
 use Workerman\Connection\TcpConnection;
+use Workerman\Timer;
 use Workerman\Worker;
 
 class AMIListener
 {
-    private $host = "127.0.0.1";
-    private $port = 5038;
-    private $username = "";
-    private $secret = "";
+    private $host;
+    private $port;
+    private $username;
+    private $secret;
     private $listeners = [];
+    private $queue_send = [];
 
     public function __construct($username,$secret,$host ="127.0.0.1",$port=5038){
         $this->username = $username;
@@ -24,12 +26,12 @@ class AMIListener
         $this->listeners[] = ["function"=>$function,"event"=>$event];
     }
 
-    private function call($parameter){
+    private function call($parameter,&$connection){
         foreach ($this->listeners as $listener){
             if ($listener["event"] === ""){
-                call_user_func($listener["function"],$parameter);
-            }else if (isset($parameter["Event"]) && $parameter["Event"] === $listener["event"]){
-                call_user_func($listener["function"],$parameter);
+                call_user_func_array($listener["function"],[$parameter,&$connection]);
+            }else if (isset($parameter["Event"]) && ( (is_array($listener["event"]) && in_array($parameter["Event"],$listener["event"]))  || $parameter["Event"] === $listener["event"]) ){
+                call_user_func_array($listener["function"],[$parameter,&$connection]);
             }
         }
     }
@@ -43,6 +45,16 @@ class AMIListener
                 $connection->send( "action: login\r\n");
                 $connection->send( "username: ".$this->username."\r\n");
                 $connection->send( "secret: ".$this->secret."\r\n\r\n");
+
+                Timer::add(1,function () use ($connection){
+                    if (count($this->queue_send) > 0 ){
+                        $parameter = array_pop($this->queue_send);
+                        foreach ($parameter as $key=>$param){
+                            $connection->send( $key.": ".$param."\r\n");
+                        }
+                        $connection->send( "\r\n");
+                    }
+                });
             };
             $ws_connection->onMessage = function (TcpConnection $connection, $data) {
                 $datas = explode(PHP_EOL.PHP_EOL,$data);
@@ -56,7 +68,7 @@ class AMIListener
                                 $parameters[trim($parameter[0])] = trim($parameter[1]);
                             }
                         }
-                        $this->call($parameters);
+                        $this->call($parameters,$connection);
                     }
                 }
             };
@@ -68,9 +80,9 @@ class AMIListener
             };
             $ws_connection->connect();
         };
-
         Worker::runAll();
     }
+
 	
 	public static function getRecordingFile($id,$defaultPath = "/var/spool/asterisk/monitor/",$fileFormat = "wav"){
         $y = date("Y",round($id));
@@ -86,5 +98,8 @@ class AMIListener
             }
         }
         return null;
+    }
+    public function sendParameter($parameter){
+        array_push($this->queue_send,$parameter);
     }
 }
